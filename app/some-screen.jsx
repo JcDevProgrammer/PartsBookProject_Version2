@@ -1,18 +1,16 @@
-// app/some-screen.jsx
 import React from "react";
 import { View, Text, StyleSheet, Button } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function SomeScreen() {
-  // Halimbawa: kung papasahan mo ng ?id=123
   const { id } = useLocalSearchParams();
-  const router = useRouter(); // kung gusto mong mag-navigate
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Param id: {id}</Text>
 
-      {/* Halimbawa, mag-navigate sa ibang screen */}
+      {}
       <Button
         title="Go to Another Screen"
         onPress={() => {

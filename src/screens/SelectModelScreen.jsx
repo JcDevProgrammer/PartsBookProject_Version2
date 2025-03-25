@@ -9,7 +9,11 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import QRCode from "react-native-qrcode-svg"; // Import para sa QR code generation
+import QRCode from "react-native-qrcode-svg";
+import Constants from "expo-constants";
+
+const qrLink =
+  Constants.expoConfig?.extra?.qrLink || "https://your-app-download-link.com";
 
 export default function SelectModelScreen() {
   const router = useRouter();
@@ -24,12 +28,11 @@ export default function SelectModelScreen() {
     router.push("/home-screen");
   };
 
-  // Determine if running on web
   const isWeb = Platform.OS === "web";
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
+      {}
       <View style={styles.header}>
         <Image
           source={require("../../assets/icons/printer.png")}
@@ -43,7 +46,6 @@ export default function SelectModelScreen() {
           <Text style={styles.searchButtonText}>Please Select a Model</Text>
         </TouchableOpacity>
 
-        {/* Info Icon */}
         <TouchableOpacity onPress={toggleInfoMenu}>
           <Image
             source={require("../../assets/icons/info.png")}
@@ -52,7 +54,6 @@ export default function SelectModelScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* BODY */}
       <View style={styles.body}>
         <Text style={styles.bodyText}>
           No device currently selected, please select device.
@@ -93,11 +94,7 @@ export default function SelectModelScreen() {
             <Text style={[styles.qrHeader, { fontSize: isWeb ? 24 : 18 }]}>
               Access on Mobile
             </Text>
-            {/* Generated permanent QR code */}
-            <QRCode
-              value="https://your-app-download-link.com"
-              size={isWeb ? 240 : 280}
-            />
+            <QRCode value={qrLink} size={isWeb ? 240 : 280} />
             <Text style={[styles.qrDescription, { fontSize: isWeb ? 16 : 14 }]}>
               Scan this QR code with your mobile device to quickly access our
               website and enjoy a seamless browsing experience on the go.
@@ -151,8 +148,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 20,
   },
-
-  /* INFO MENU */
   infoMenu: {
     position: "absolute",
     top: 80,
@@ -184,8 +179,6 @@ const styles = StyleSheet.create({
     color: "#333",
     textDecorationLine: "underline",
   },
-
-  /* QR MODAL */
   modalContainer: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",

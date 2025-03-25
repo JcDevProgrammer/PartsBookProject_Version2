@@ -79,7 +79,6 @@ export default function AllPDFScreen() {
     setSelectedFileUrl(fileUrl);
   };
 
-  // Print the currently selected PDF
   const handlePrint = async () => {
     if (!selectedFileUrl) return;
     try {

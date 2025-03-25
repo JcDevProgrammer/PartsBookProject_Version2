@@ -21,7 +21,11 @@ import { ref, listAll, getDownloadURL } from "firebase/storage";
 import { storage } from "../config/firebaseConfig";
 import PdfViewer from "../../components/PdfViewer";
 import QRCode from "react-native-qrcode-svg";
-import { encode } from "base-64"; // Gamitin para sa base64 conversion
+import { encode } from "base-64";
+import Constants from "expo-constants";
+
+const qrLink =
+  Constants.expoConfig?.extra?.qrLink || "https://your-app-download-link.com";
 
 const FolderItem = React.memo(
   ({ item, isExpanded, onToggleFolder, onOpenFile }) => (
@@ -211,7 +215,6 @@ export default function ModelListScreen() {
     }
   };
 
-  // Updated handleOpenFile gamit ang base-64 encode para iwas sa "Premature close" error
   const handleOpenFile = async (url) => {
     if (!isOnline) {
       Alert.alert("Offline", "Cannot view PDF offline (needs internet).");
@@ -480,10 +483,7 @@ export default function ModelListScreen() {
             >
               Access on Mobile
             </Text>
-            <QRCode
-              value="https://your-app-download-link.com"
-              size={Platform.OS === "web" ? 240 : 280}
-            />
+            <QRCode value={qrLink} size={Platform.OS === "web" ? 240 : 280} />
             <Text
               style={[
                 styles.qrDescription,
@@ -601,12 +601,7 @@ const styles = StyleSheet.create({
   },
   viewerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   viewerActions: { flexDirection: "row" },
-  viewerIcon: {
-    width: 25,
-    height: 25,
-    tintColor: "#fff",
-    marginHorizontal: 8,
-  },
+  viewerIcon: { width: 25, height: 25, tintColor: "#fff", marginHorizontal: 8 },
   downloadOverlay: {
     position: "absolute",
     top: 0,
@@ -639,11 +634,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
-  qrHeader: {
-    fontWeight: "bold",
-    color: "#283593",
-    marginBottom: 15,
-  },
+  qrHeader: { fontWeight: "bold", color: "#283593", marginBottom: 15 },
   qrImage: { marginBottom: 15 },
   qrDescription: {
     color: "#333",

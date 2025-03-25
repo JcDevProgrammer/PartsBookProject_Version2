@@ -1,6 +1,6 @@
 import React from "react";
 import { StatusBar } from "react-native";
-import AppNavigator from "./navigation/AppNavigator"; // ✅ Ensure this is correct
+import AppNavigator from "./navigation/AppNavigator";
 
 const App = () => {
   return (

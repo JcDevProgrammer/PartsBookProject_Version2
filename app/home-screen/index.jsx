@@ -16,7 +16,6 @@ import { LinearGradient } from "expo-linear-gradient";
 export default function HomeScreen() {
   const router = useRouter();
 
-  // Animated values for fade and slide
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-30)).current;
 
@@ -35,7 +34,6 @@ export default function HomeScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  // Function to open external URLs (like Facebook)
   const openURL = async (url) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -55,7 +53,7 @@ export default function HomeScreen() {
       style={styles.gradientContainer}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        {/* HEADER */}
+        {}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Image
@@ -67,26 +65,26 @@ export default function HomeScreen() {
           <View style={{ width: 25, height: 25 }} />
         </View>
 
-        {/* BODY with animation */}
+        {}
         <Animated.View
           style={[
             styles.body,
             { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
           ]}
         >
-          {/* TOP BANNER: Kimura Chaves Logo */}
+          {}
           <Image
             source={require("../../assets/images/kimura-chaves-logo.png")}
             style={styles.bannerImage}
             resizeMode="contain"
           />
 
-          {/* WELCOME TEXT */}
+          {}
           <Text style={styles.welcomeText}>
             Welcome to Kimura Chaves Enterprise Inc.
           </Text>
 
-          {/* FACEBOOK BUTTON */}
+          {}
           <TouchableOpacity
             style={styles.button}
             onPress={() =>
@@ -96,7 +94,7 @@ export default function HomeScreen() {
             <Text style={styles.buttonText}>Visit Our Facebook Page</Text>
           </TouchableOpacity>
 
-          {/* FACEBOOK BUTTON */}
+          {}
           <TouchableOpacity
             style={styles.button}
             onPress={() => openURL("https://kceisewing.com/")}
@@ -104,7 +102,7 @@ export default function HomeScreen() {
             <Text style={styles.buttonText}>Visit Our Website</Text>
           </TouchableOpacity>
 
-          {/* ABOUT US SECTION */}
+          {}
           <View style={styles.section}>
             <Image
               source={require("../../assets/images/about-us.jpg")}
@@ -127,7 +125,7 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* CONTACT US SECTION */}
+          {}
           <View style={styles.section}>
             <Image
               source={require("../../assets/images/contact-us.png")}

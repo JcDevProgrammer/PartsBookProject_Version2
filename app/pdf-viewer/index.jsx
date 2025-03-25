@@ -20,7 +20,6 @@ export default function PdfViewer() {
   );
 }
 
-// EXACT layout from your snippet
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#EDEDED" },
 });

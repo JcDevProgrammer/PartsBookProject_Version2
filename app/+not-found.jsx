@@ -1,4 +1,3 @@
-// app/+not-found.jsx
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
@@ -11,14 +10,14 @@ export default function NotFoundScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    backgroundColor: "#EDEDED" 
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EDEDED",
   },
-  text: { 
-    fontSize: 18, 
-    fontWeight: "bold" 
-  }
+  text: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });

@@ -11,14 +11,13 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ref, listAll, getDownloadURL } from "firebase/storage";
-import { storage } from "../../src/config/firebaseConfig"; 
+import { storage } from "../../src/config/firebaseConfig";
 
 export default function UserManualScreen() {
   const router = useRouter();
 
   const { model } = useLocalSearchParams();
   const selectedModel = model ? model : "";
-
 
   const sidebarCategories = [
     { id: "1", title: "Catalogue" },
@@ -36,7 +35,6 @@ export default function UserManualScreen() {
     "Parts book",
   ];
 
-  // State para sa grouped documents
   const [groupedDocs, setGroupedDocs] = useState({
     Catalogue: [],
     "Error code": [],
@@ -47,7 +45,6 @@ export default function UserManualScreen() {
   });
   const [loading, setLoading] = useState(false);
 
-  // Kung walang laman ang BFS at model = "BROTHER ISM", gagamitin itong fallback
   const forcedBrotherISM = {
     Catalogue: [
       {
@@ -87,18 +84,14 @@ export default function UserManualScreen() {
     Uncategorized: [],
   };
 
-  // --- CONCURRENT BFS (unlimited subfolders) ---
-  // Sa halip na sequential BFS, sabay-sabay natin i-li-listAll ang bawat folder sa bawat "level" ng queue.
   async function concurrentBFS(folderRef, modelName) {
     let queue = [folderRef];
     let visited = new Set();
     let allItems = [];
 
     while (queue.length > 0) {
-      // Kukunin natin lahat ng nasa queue nang sabay, tapos gagamit tayo ng Promise.all
       const currentLevel = [...queue];
-      queue = []; // i-empty ang queue, mapupuno ulit ito mamaya
-      // listAll for each folderRef sabay-sabay
+      queue = [];
       const levelResults = await Promise.all(
         currentLevel.map((pRef) => listAll(pRef))
       );
@@ -110,10 +103,9 @@ export default function UserManualScreen() {
         if (visited.has(prefixRef.fullPath)) continue;
         visited.add(prefixRef.fullPath);
 
-        // Kunin lahat ng files sabay-sabay
         const filePromises = folderResult.items.map(async (itemRef) => {
           const fileName = itemRef.name.toLowerCase();
-          // Filter by model name
+
           if (modelName && !fileName.includes(modelName.toLowerCase())) {
             return null;
           }
@@ -130,14 +122,12 @@ export default function UserManualScreen() {
           if (f) allItems.push(f);
         }
 
-        // I-push ang subfolders para sa susunod na level
         queue.push(...folderResult.prefixes);
       }
     }
     return allItems;
   }
 
-  // useEffect: tuwing magbabago ang selectedModel, mag–fetch ulit
   useEffect(() => {
     fetchUserManuals(selectedModel);
   }, [selectedModel]);
@@ -145,11 +135,10 @@ export default function UserManualScreen() {
   const fetchUserManuals = async (modelName) => {
     try {
       setLoading(true);
-      // BFS mula sa subfolder "modelName + /"
+
       const folderRef = ref(storage, modelName + "/");
       const allDocs = await concurrentBFS(folderRef, modelName);
 
-      // Kung walang nakuha na items, fallback
       if (allDocs.length === 0) {
         if (modelName === "BROTHER ISM") {
           setGroupedDocs(forcedBrotherISM);
@@ -167,7 +156,6 @@ export default function UserManualScreen() {
         return;
       }
 
-      // Otherwise, group them by category
       const grouped = {
         Catalogue: [],
         "Error code": [],
@@ -214,17 +202,14 @@ export default function UserManualScreen() {
     }
   };
 
-  // PDF opener (mobile/web)
   const handleOpenDocument = (pdfUrl) => {
     if (Platform.OS === "web") {
       window.open(pdfUrl, "_blank");
     } else {
-      // Kung gusto mong mag-push sa isang PDF viewer screen
       router.push({ pathname: "/pdf-viewer", params: { url: pdfUrl } });
     }
   };
 
-  // Render ng isang PDF row
   const renderDocItem = (doc, index) => (
     <View key={index} style={styles.documentItem}>
       <TouchableOpacity
@@ -240,7 +225,6 @@ export default function UserManualScreen() {
     </View>
   );
 
-  // Kanang side: i-render categories ayon sa categoryOrder
   const renderRightSide = () => {
     return categoryOrder.map((cat) => {
       const docsForThisCat = groupedDocs[cat] || [];
@@ -253,7 +237,6 @@ export default function UserManualScreen() {
     });
   };
 
-  // Kaliwang sidebar
   const renderSidebar = () => (
     <FlatList
       data={sidebarCategories}
@@ -266,7 +249,6 @@ export default function UserManualScreen() {
     />
   );
 
-  // Header
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => router.back()}>
@@ -303,10 +285,10 @@ export default function UserManualScreen() {
         </View>
       ) : (
         <View style={styles.content}>
-          {/* Kaliwang sidebar */}
+          {}
           <View style={styles.sidebar}>{renderSidebar()}</View>
 
-          {/* Kanang bahagi - categories at mga doc */}
+          {}
           <View style={styles.documents}>{renderRightSide()}</View>
         </View>
       )}
@@ -314,7 +296,6 @@ export default function UserManualScreen() {
   );
 }
 
-// STYLES
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#EDEDED" },
   header: {
