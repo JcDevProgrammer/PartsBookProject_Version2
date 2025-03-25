@@ -6,7 +6,7 @@
     "production": {
       "distribution": "internal",
       "android": {
-        "artifactType": "apk"
+        "buildType": "apk"
       }
     }
   }
