@@ -14,9 +14,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#fffff"
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.jcrice13.GT_ISM_PartsBookProject"
+      "package": "com.jcrice13.GT_ISM_PartsBookProject",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -38,6 +39,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     },
     "extra": {
       "router": {
