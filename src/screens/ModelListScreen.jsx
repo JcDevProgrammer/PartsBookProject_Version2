@@ -20,9 +20,43 @@ import * as FileSystem from "expo-file-system";
 import { ref, listAll, getDownloadURL } from "firebase/storage";
 import { storage } from "../config/firebaseConfig";
 import PdfViewer from "../../components/PdfViewer";
-import QRCode from "react-native-qrcode-svg";
 import { encode } from "base-64";
 import Constants from "expo-constants";
+
+function getFolderLogo(folderName) {
+  const lower = folderName.toLowerCase();
+  if (lower.includes("brother hsm")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("brother ism")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("brother")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("dayang")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("dennison")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("eastman")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("golden wheel")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("hashima")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("juki")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("kansai special")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("km machine")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("mitsubishi")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("durkopp adler")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("jack")) {
+    return require("../../assets/icons/folder.png");
+  } else {
+    return require("../../assets/icons/folder.png");
+  }
+}
 
 const qrLink =
   Constants.expoConfig?.extra?.qrLink || "https://your-app-download-link.com";
@@ -35,6 +69,10 @@ const FolderItem = React.memo(
         onPress={() => onToggleFolder(item.folderName)}
       >
         <View style={styles.folderHeader}>
+          <Image
+            source={getFolderLogo(item.folderName)}
+            style={styles.brandLogo}
+          />
           <Text style={styles.folderTitle}>{item.folderName}</Text>
           {item.files && item.files.length > 0 && (
             <Text style={styles.folderCount}>({item.files.length} items)</Text>
@@ -59,8 +97,13 @@ const FolderItem = React.memo(
                 style={styles.fileItem}
                 onPress={() => onOpenFile(f.url)}
               >
-                <Text style={styles.fileName}>{f.name}</Text>
-                <Text style={styles.filePath}>{f.path}</Text>
+                <View style={styles.fileRow}>
+                  <Image
+                    source={require("../../assets/icons/pdf.png")}
+                    style={styles.pdfLogo}
+                  />
+                  <Text style={styles.fileName}>{f.name}</Text>
+                </View>
               </TouchableOpacity>
             ))
           ) : (
@@ -162,7 +205,8 @@ export default function ModelListScreen() {
         [folderName]: { ...prev[folderName], loading: true },
       }));
       const folderRef = ref(storage, folderName + "/");
-      const files = await fetchFolderRecursively(folderRef);
+      let files = await fetchFolderRecursively(folderRef);
+      files.sort((a, b) => a.name.localeCompare(b.name));
       setSubfolderData((prev) => ({
         ...prev,
         [folderName]: { files, loading: false, loaded: true },
@@ -186,7 +230,8 @@ export default function ModelListScreen() {
         `@cachedSubfolder_${folderName}`
       );
       if (cached) {
-        const files = JSON.parse(cached);
+        let files = JSON.parse(cached);
+        files.sort((a, b) => a.name.localeCompare(b.name));
         setSubfolderData((prev) => ({
           ...prev,
           [folderName]: { files, loading: false, loaded: true },
@@ -483,7 +528,15 @@ export default function ModelListScreen() {
             >
               Access on Mobile
             </Text>
-            <QRCode value={qrLink} size={Platform.OS === "web" ? 240 : 280} />
+            {}
+            <Image
+              source={require("../../assets/images/qr-code.png")}
+              style={{
+                width: Platform.OS === "web" ? 240 : 280,
+                height: Platform.OS === "web" ? 240 : 280,
+                resizeMode: "contain",
+              }}
+            />
             <Text
               style={[
                 styles.qrDescription,
@@ -507,18 +560,29 @@ export default function ModelListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EDEDED" },
+  container: {
+    flex: 1,
+    backgroundColor: "#EDEDED",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#283593",
     paddingTop: 20,
     paddingBottom: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     justifyContent: "space-between",
   },
-  headerIcon: { width: 25, height: 25, tintColor: "#fff" },
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  headerIcon: {
+    width: 25,
+    height: 25,
+    tintColor: "#fff",
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   infoMenu: {
     position: "absolute",
     top: 70,
@@ -541,13 +605,18 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 10,
   },
-  infoMenuButton: { paddingVertical: 5 },
+  infoMenuButton: {
+    paddingVertical: 5,
+  },
   infoMenuButtonText: {
     fontSize: 14,
     color: "#333",
     textDecorationLine: "underline",
   },
-  searchContainer: { padding: 10, backgroundColor: "#EDEDED" },
+  searchContainer: {
+    padding: 10,
+    backgroundColor: "#EDEDED",
+  },
   searchBar: {
     backgroundColor: "#fff",
     paddingHorizontal: 10,
@@ -568,40 +637,102 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
   },
-  folderHeader: { flexDirection: "row", alignItems: "center" },
-  folderTitle: { fontSize: 16, color: "#333", fontWeight: "bold" },
-  folderCount: { fontSize: 14, color: "#666", marginLeft: 5 },
-  arrowIcon: { width: 20, height: 20, tintColor: "#333" },
+  folderHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
+  brandLogo: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+    resizeMode: "contain",
+  },
+  folderTitle: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "bold",
+    flexShrink: 1,
+    flexWrap: "wrap",
+  },
+  folderCount: {
+    fontSize: 14,
+    color: "#666",
+    marginLeft: 8,
+  },
+  arrowIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#333",
+  },
   fileList: {
     backgroundColor: "#f9f9f9",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
   fileItem: {
-    paddingVertical: 5,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
-  fileName: { fontSize: 16, color: "#283593", fontWeight: "600" },
-  filePath: { fontSize: 12, color: "#666", marginTop: 2 },
-  noFilesText: { fontSize: 14, color: "#666", fontStyle: "italic" },
-  noMatchContainer: { marginTop: 40, alignItems: "center" },
-  noMatchText: { fontSize: 16, color: "#666" },
-  viewerContainer: { flex: 1, backgroundColor: "#EDEDED" },
+  fileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  pdfLogo: {
+    width: 25,
+    height: 25,
+    marginRight: 12,
+    resizeMode: "contain",
+  },
+  fileName: {
+    fontSize: 16,
+    color: "#283593",
+    fontWeight: "600",
+  },
+  noFilesText: {
+    fontSize: 14,
+    color: "#666",
+    fontStyle: "italic",
+  },
+  noMatchContainer: {
+    marginTop: 40,
+    alignItems: "center",
+  },
+  noMatchText: {
+    fontSize: 16,
+    color: "#666",
+  },
+  viewerContainer: {
+    flex: 1,
+    backgroundColor: "#EDEDED",
+  },
   viewerHeader: {
     flexDirection: "row",
     backgroundColor: "#283593",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 20,
-    paddingBottom: 15,
-    paddingHorizontal: 10,
+    paddingTop: 16,
+    paddingBottom: 12,
+    paddingHorizontal: 12,
   },
-  viewerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  viewerActions: { flexDirection: "row" },
-  viewerIcon: { width: 25, height: 25, tintColor: "#fff", marginHorizontal: 8 },
+  viewerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  viewerActions: {
+    flexDirection: "row",
+  },
+  viewerIcon: {
+    width: 25,
+    height: 25,
+    tintColor: "#fff",
+    marginHorizontal: 8,
+  },
   downloadOverlay: {
     position: "absolute",
     top: 0,
@@ -619,7 +750,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  downloadText: { color: "#fff", marginTop: 10, fontSize: 16 },
+  downloadText: {
+    color: "#fff",
+    marginTop: 10,
+    fontSize: 16,
+  },
   modalContainer: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -634,8 +769,11 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
-  qrHeader: { fontWeight: "bold", color: "#283593", marginBottom: 15 },
-  qrImage: { marginBottom: 15 },
+  qrHeader: {
+    fontWeight: "bold",
+    color: "#283593",
+    marginBottom: 15,
+  },
   qrDescription: {
     color: "#333",
     textAlign: "center",
@@ -648,5 +786,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
   },
-  closeButtonText: { color: "#fff", fontSize: 14 },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 14,
+  },
 });

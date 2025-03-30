@@ -9,7 +9,6 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import QRCode from "react-native-qrcode-svg";
 import Constants from "expo-constants";
 
 const qrLink =
@@ -32,7 +31,6 @@ export default function SelectModelScreen() {
 
   return (
     <View style={styles.container}>
-      {}
       <View style={styles.header}>
         <Image
           source={require("../../assets/icons/printer.png")}
@@ -94,7 +92,16 @@ export default function SelectModelScreen() {
             <Text style={[styles.qrHeader, { fontSize: isWeb ? 24 : 18 }]}>
               Access on Mobile
             </Text>
-            <QRCode value={qrLink} size={isWeb ? 240 : 280} />
+            {}
+            <Image
+              source={require("../../assets/images/qr-code.png")}
+              style={{
+                width: isWeb ? 240 : 280,
+                height: isWeb ? 240 : 280,
+                resizeMode: "contain",
+                marginBottom: 15,
+              }}
+            />
             <Text style={[styles.qrDescription, { fontSize: isWeb ? 16 : 14 }]}>
               Scan this QR code with your mobile device to quickly access our
               website and enjoy a seamless browsing experience on the go.
@@ -123,11 +130,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     justifyContent: "space-between",
   },
-  headerIcon: {
-    width: 25,
-    height: 25,
-    tintColor: "#fff",
-  },
+  headerIcon: { width: 25, height: 25, tintColor: "#fff" },
   searchButton: {
     flex: 1,
     backgroundColor: "#fff",
