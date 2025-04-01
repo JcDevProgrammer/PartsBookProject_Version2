@@ -35,11 +35,19 @@ function getFolderLogo(folderName) {
     return require("../../assets/icons/folder.png");
   } else if (lower.includes("dennison")) {
     return require("../../assets/icons/folder.png");
+  } else if (lower.includes("dino")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("durkopp adler")) {
+    return require("../../assets/icons/folder.png");
   } else if (lower.includes("eastman")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("gemsy")) {
     return require("../../assets/icons/folder.png");
   } else if (lower.includes("golden wheel")) {
     return require("../../assets/icons/folder.png");
   } else if (lower.includes("hashima")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("hoseki")) {
     return require("../../assets/icons/folder.png");
   } else if (lower.includes("juki")) {
     return require("../../assets/icons/folder.png");
@@ -49,9 +57,49 @@ function getFolderLogo(folderName) {
     return require("../../assets/icons/folder.png");
   } else if (lower.includes("mitsubishi")) {
     return require("../../assets/icons/folder.png");
-  } else if (lower.includes("durkopp adler")) {
+  } else if (lower.includes("no hsing")) {
     return require("../../assets/icons/folder.png");
-  } else if (lower.includes("jack")) {
+  } else if (lower.includes("pegasus")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("racing")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("reece")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("ricoma")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("seiko")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("shanggong")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("shing ling")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("shing ray")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("singer")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("sipami")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("siruba")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("strobel")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("su-lee")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("sunstar")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("tae woo")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("typical")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("unicorn")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("union special")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("yamato")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("yao han")) {
+    return require("../../assets/icons/folder.png");
+  } else if (lower.includes("yu lun")) {
     return require("../../assets/icons/folder.png");
   } else {
     return require("../../assets/icons/folder.png");
@@ -274,14 +322,29 @@ export default function ModelListScreen() {
       const response = await fetch(url);
       if (!response.ok)
         throw new Error(`Failed to fetch PDF. Status: ${response.status}`);
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      let binary = "";
-      for (let i = 0; i < uint8Array.byteLength; i++) {
-        binary += String.fromCharCode(uint8Array[i]);
+      if (!response.body || !response.body.getReader) {
+        const arrayBuffer = await response.arrayBuffer();
+        const base64 = arrayBufferToBase64(arrayBuffer);
+        setSelectedPdfBase64(base64);
+        return;
       }
-      const base64 = encode(binary);
-      setSelectedPdfBase64(base64);
+      const reader = response.body.getReader();
+      let chunks = [];
+      let receivedLength = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+      }
+      const allChunks = new Uint8Array(receivedLength);
+      let position = 0;
+      for (let chunk of chunks) {
+        allChunks.set(chunk, position);
+        position += chunk.length;
+      }
+      const base64Data = arrayBufferToBase64(allChunks.buffer);
+      setSelectedPdfBase64(base64Data);
     } catch (error) {
       Alert.alert("Error", "Failed to download PDF: " + error.message);
       console.error("Error downloading PDF:", error);
@@ -289,6 +352,15 @@ export default function ModelListScreen() {
       setIsDownloading(false);
     }
   };
+
+  function arrayBufferToBase64(arrayBuffer) {
+    const uint8Array = new Uint8Array(arrayBuffer);
+    let binary = "";
+    for (let i = 0; i < uint8Array.byteLength; i++) {
+      binary += String.fromCharCode(uint8Array[i]);
+    }
+    return encode(binary);
+  }
 
   const handlePrint = async () => {
     if (Platform.OS === "web") {
@@ -528,7 +600,6 @@ export default function ModelListScreen() {
             >
               Access on Mobile
             </Text>
-            {}
             <Image
               source={require("../../assets/images/qr-code.png")}
               style={{
