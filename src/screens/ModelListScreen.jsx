@@ -140,8 +140,6 @@ export default function ModelListScreen() {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const pdfViewerRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // For smooth modal animation on mobile (QR Code modal)
   const [modalOpacity] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -232,7 +230,6 @@ export default function ModelListScreen() {
     }
   };
 
-  // Mobile branch: Gamit ang caching at downloadAsync para mapabilis ang pag-load ng PDF
   const handleOpenFile = async (file) => {
     if (!isOnline) {
       Alert.alert("Offline", "Cannot view PDF offline.");
@@ -303,9 +300,26 @@ export default function ModelListScreen() {
   };
 
   const filteredData = useMemo(() => {
-    return items.filter((item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return items;
+    return items.reduce((acc, folder) => {
+      const folderNameMatches = folder.name.toLowerCase().includes(query);
+      if (folderNameMatches) {
+        acc.push(folder);
+      } else if (
+        folder.children &&
+        folder.children.some((child) =>
+          child.name.toLowerCase().includes(query)
+        )
+      ) {
+        const newFolder = { ...folder };
+        newFolder.children = folder.children.filter((child) =>
+          child.name.toLowerCase().includes(query)
+        );
+        acc.push(newFolder);
+      }
+      return acc;
+    }, []);
   }, [items, searchQuery]);
 
   if (Platform.OS === "web" && selectedPdfBase64) {
@@ -406,7 +420,6 @@ export default function ModelListScreen() {
           />
         </TouchableOpacity>
       </View>
-
       {showInfoMenu && (
         <View style={styles.infoMenu}>
           <Text style={styles.infoMenuTitle}>
@@ -429,7 +442,6 @@ export default function ModelListScreen() {
           </TouchableOpacity>
         </View>
       )}
-
       <Modal
         visible={showAccessModal}
         animationType="slide"
@@ -479,7 +491,6 @@ export default function ModelListScreen() {
           </View>
         </Animated.View>
       </Modal>
-
       <View style={styles.searchContainer}>
         {!isOnline && (
           <Text style={{ color: "red", marginBottom: 5 }}>
@@ -503,7 +514,6 @@ export default function ModelListScreen() {
         <FlatList
           data={filteredData.sort((a, b) => a.name.localeCompare(b.name))}
           keyExtractor={(item) => item.id}
-          // Taasan ang initialNumToRender para agad makita lahat
           initialNumToRender={20}
           renderItem={({ item }) => (
             <FolderItem
