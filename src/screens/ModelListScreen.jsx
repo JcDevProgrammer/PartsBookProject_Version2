@@ -11,6 +11,7 @@ import {
   Alert,
   Platform,
   Modal,
+  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import NetInfo from "@react-native-community/netinfo";
@@ -49,11 +50,9 @@ async function getDriveItems(folderId, pageToken = null) {
 
 async function getTopLevelItems() {
   const { files } = await getDriveItems(BASE_FOLDER_ID, null);
-
   const folders = files.filter(
     (item) => item.mimeType === "application/vnd.google-apps.folder"
   );
-
   return folders.sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -129,21 +128,21 @@ const FolderItem = React.memo(
   )
 );
 
-// ----------------- Main Component -----------------
 export default function ModelListScreen() {
   const router = useRouter();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedFolder, setExpandedFolder] = useState(null);
-
   const [selectedPdfBase64, setSelectedPdfBase64] = useState(null);
   const [isOnline, setIsOnline] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
-
   const [showInfoMenu, setShowInfoMenu] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const pdfViewerRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // For smooth modal animation on mobile (QR Code modal)
+  const [modalOpacity] = useState(new Animated.Value(0));
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -157,6 +156,22 @@ export default function ModelListScreen() {
     }
     return () => unsubscribe();
   }, [isOnline]);
+
+  useEffect(() => {
+    if (showAccessModal) {
+      Animated.timing(modalOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(modalOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showAccessModal]);
 
   const loadTopLevelItems = async () => {
     setLoading(true);
@@ -217,6 +232,7 @@ export default function ModelListScreen() {
     }
   };
 
+  // Mobile branch: Gamit ang caching at downloadAsync para mapabilis ang pag-load ng PDF
   const handleOpenFile = async (file) => {
     if (!isOnline) {
       Alert.alert("Offline", "Cannot view PDF offline.");
@@ -231,12 +247,23 @@ export default function ModelListScreen() {
     }
     try {
       setIsDownloading(true);
-      const response = await fetch(file.webContentLink);
-      if (!response.ok)
-        throw new Error(`Failed to fetch PDF. Status: ${response.status}`);
-      const arrayBuffer = await response.arrayBuffer();
-      const base64 = arrayBufferToBase64(arrayBuffer);
-      setSelectedPdfBase64(base64);
+      const fileUri = FileSystem.cacheDirectory + file.id + ".pdf";
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (fileInfo.exists) {
+        const cachedData = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        setSelectedPdfBase64(cachedData);
+      } else {
+        const downloadRes = await FileSystem.downloadAsync(
+          file.webContentLink,
+          fileUri
+        );
+        const base64 = await FileSystem.readAsStringAsync(downloadRes.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        setSelectedPdfBase64(base64);
+      }
     } catch (error) {
       Alert.alert("Error", "Failed to download PDF: " + error.message);
       console.error("Error downloading PDF:", error);
@@ -372,7 +399,6 @@ export default function ModelListScreen() {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Please select a model</Text>
-        {}
         <TouchableOpacity onPress={toggleInfoMenu}>
           <Image
             source={require("../../assets/icons/info.png")}
@@ -381,7 +407,6 @@ export default function ModelListScreen() {
         </TouchableOpacity>
       </View>
 
-      {}
       {showInfoMenu && (
         <View style={styles.infoMenu}>
           <Text style={styles.infoMenuTitle}>
@@ -390,7 +415,6 @@ export default function ModelListScreen() {
           <Text style={styles.infoMenuDescription}>
             Build for internal distribution.
           </Text>
-          {}
           <TouchableOpacity
             style={styles.infoMenuButton}
             onPress={() => {
@@ -406,14 +430,15 @@ export default function ModelListScreen() {
         </View>
       )}
 
-      {}
       <Modal
         visible={showAccessModal}
         animationType="slide"
         transparent={true}
         onRequestClose={() => setShowAccessModal(false)}
       >
-        <View style={styles.modalContainer}>
+        <Animated.View
+          style={[styles.modalContainer, { opacity: modalOpacity }]}
+        >
           <View
             style={[
               styles.modalContent,
@@ -452,7 +477,7 @@ export default function ModelListScreen() {
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
       </Modal>
 
       <View style={styles.searchContainer}>
@@ -478,7 +503,8 @@ export default function ModelListScreen() {
         <FlatList
           data={filteredData.sort((a, b) => a.name.localeCompare(b.name))}
           keyExtractor={(item) => item.id}
-          initialNumToRender={5}
+          // Taasan ang initialNumToRender para agad makita lahat
+          initialNumToRender={20}
           renderItem={({ item }) => (
             <FolderItem
               item={item}
@@ -531,11 +557,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: "#283593",
   },
-  infoMenuDescription: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 10,
-  },
+  infoMenuDescription: { fontSize: 12, color: "#666", marginBottom: 10 },
   infoMenuButton: { paddingVertical: 5 },
   infoMenuButtonText: {
     fontSize: 14,
@@ -566,17 +588,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 14,
   },
-  folderHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexShrink: 1,
-  },
-  brandLogo: {
-    width: 30,
-    height: 30,
-    marginRight: 10,
-    resizeMode: "contain",
-  },
+  folderHeader: { flexDirection: "row", alignItems: "center", flexShrink: 1 },
+  brandLogo: { width: 30, height: 30, marginRight: 10, resizeMode: "contain" },
   folderTitle: {
     fontSize: 16,
     color: "#333",

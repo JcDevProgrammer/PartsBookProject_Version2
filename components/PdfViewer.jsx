@@ -15,6 +15,7 @@ import { WebView } from "react-native-webview";
 
 const PdfViewer = forwardRef(({ base64Data, uri }, ref) => {
   const [html, setHtml] = useState(null);
+  const [isWebLoading, setIsWebLoading] = useState(true);
 
   useEffect(() => {
     if (Platform.OS === "web") {
@@ -38,19 +39,59 @@ const PdfViewer = forwardRef(({ base64Data, uri }, ref) => {
   if (Platform.OS === "web") {
     if (base64Data) {
       return (
-        <iframe
-          src={"data:application/pdf;base64," + base64Data}
-          style={{ width: "100%", height: "100%", border: "none" }}
-          title="PDF Viewer"
-        />
+        <View style={{ position: "relative", width: "100%", height: "100%" }}>
+          {isWebLoading && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1,
+                backgroundColor: "#fff",
+              }}
+            >
+              <ActivityIndicator size="large" color="#283593" />
+            </View>
+          )}
+          <iframe
+            onLoad={() => setIsWebLoading(false)}
+            src={"data:application/pdf;base64," + base64Data}
+            style={{ width: "100%", height: "100%", border: "none" }}
+            title="PDF Viewer"
+          />
+        </View>
       );
     } else if (uri) {
       return (
-        <iframe
-          src={uri}
-          style={{ width: "100%", height: "100%", border: "none" }}
-          title="PDF Viewer"
-        />
+        <View style={{ position: "relative", width: "100%", height: "100%" }}>
+          {isWebLoading && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1,
+                backgroundColor: "#fff",
+              }}
+            >
+              <ActivityIndicator size="large" color="#283593" />
+            </View>
+          )}
+          <iframe
+            onLoad={() => setIsWebLoading(false)}
+            src={uri}
+            style={{ width: "100%", height: "100%", border: "none" }}
+            title="PDF Viewer"
+          />
+        </View>
       );
     } else {
       return <Text>No PDF available.</Text>;
@@ -79,6 +120,8 @@ const PdfViewer = forwardRef(({ base64Data, uri }, ref) => {
       source={{ html }}
       style={styles.webview}
       mixedContentMode="always"
+      javaScriptEnabled={true}
+      domStorageEnabled={true}
     />
   );
 });
@@ -266,7 +309,6 @@ function createPdfHtml(base64) {
     "            textDivs: []",
     "          }).promise.then(function() {",
     "            pageTextDivs[pageNum] = textLayerDiv.querySelectorAll('span');",
-    "            // Mark this page as rendered",
     "            container.setAttribute('data-rendered', 'true');",
     "          });",
     "        });",
@@ -286,7 +328,6 @@ function createPdfHtml(base64) {
     '        pageContainer.id = "pageContainer-" + i;',
     "        viewerContainer.appendChild(pageContainer);",
     "      }",
-    "      // Immediately render the first page for faster loading",
     "      renderPage(1);",
     "      var observer = new IntersectionObserver(function(entries, observer) {",
     "        entries.forEach(function(entry) {",
