@@ -103,7 +103,20 @@ const FolderItem = React.memo(
             <ActivityIndicator size="small" color="#283593" />
           ) : item.children && item.children.length > 0 ? (
             item.children
-              .sort((a, b) => a.name.localeCompare(b.name))
+              .sort((a, b) => {
+                const nameA = a.name.toLowerCase();
+                const nameB = b.name.toLowerCase();
+                const aLast =
+                  nameA.includes("service manual") ||
+                  nameA.includes("troubleshooting");
+                const bLast =
+                  nameB.includes("service manual") ||
+                  nameB.includes("troubleshooting");
+
+                if (aLast && !bLast) return 1;
+                if (!aLast && bLast) return -1;
+                return nameA.localeCompare(nameB);
+              })
               .map((child) => (
                 <TouchableOpacity
                   key={child.id}
@@ -420,6 +433,7 @@ export default function ModelListScreen() {
           />
         </TouchableOpacity>
       </View>
+
       {showInfoMenu && (
         <View style={styles.infoMenu}>
           <Text style={styles.infoMenuTitle}>
@@ -442,6 +456,7 @@ export default function ModelListScreen() {
           </TouchableOpacity>
         </View>
       )}
+
       <Modal
         visible={showAccessModal}
         animationType="slide"
@@ -491,6 +506,7 @@ export default function ModelListScreen() {
           </View>
         </Animated.View>
       </Modal>
+
       <View style={styles.searchContainer}>
         {!isOnline && (
           <Text style={{ color: "red", marginBottom: 5 }}>
